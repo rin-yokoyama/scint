@@ -16,3 +16,6 @@ set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/install CACHE PATH "install dir" FO
 
 add_executable(main main.cpp)
 target_link_libraries(main ${ROOT_LIBRARIES})
+
+add_executable(fit fit.cpp)
+target_link_libraries(fit ${ROOT_LIBRARIES})

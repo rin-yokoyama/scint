@@ -25,8 +25,8 @@ int main(int argc, char **argv)
 {
     // Enable multithreading
     ROOT::EnableImplicitMT(kNWorkers);
-    // Create RDataFrame from a tree, "exampleTree" in the "example.root" file.
-    ROOT::RDataFrame d("tree", "co60_230530.root");
+    // Create RDataFrame from a tree, "tree" in the argv[1] file.
+    ROOT::RDataFrame d("tree", argv[1]);
 
     // Function defining cuts
     const auto threshold = [](const std::vector<double> &input)
@@ -59,7 +59,7 @@ int main(int argc, char **argv)
     // Function to define sample id
     const auto sampleId = [](const std::vector<double> &input)
     {
-        std::vector<int> id(input.size());
+        std::vector<double> id(input.size());
         std::iota(id.begin(), id.end(), 1);
         return id;
     };
@@ -70,18 +70,12 @@ int main(int argc, char **argv)
     };
 
     auto filtered = d.Define("wave", waveForm, {"pulse"}).Filter(threshold, {"wave"});
-    auto output = filtered.Define("pmax", traceMax, {"wave"});
-    // auto output = filtered.Define("pmax", traceMax, {"wave"}).Define("sampleId", sampleId, {"wave"});
-    output.Snapshot("output", "output.root", {
-                                                 "wave",
-                                                 "pmax",
-                                             });
+    auto output = filtered.Define("pmax", traceMax, {"wave"}).Define("sampleId", sampleId, {"wave"});
+    output.Snapshot("output", "output.root", {"wave", "pmax", "sampleId"});
     auto h = output.Histo1D({"hist", "hist", 1000, 0, 10000}, "pmax");
-    // auto h2 = output.Histo2D({"hist", "hist", 500, 0, 500, 1000, 0, 5000}, "sampleId", "wave");
 
     TFile f("output.root", "update");
     h->Write();
-    // h2->Write();
     f.Close();
 
     return 0;
